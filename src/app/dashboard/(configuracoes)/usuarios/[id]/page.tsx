@@ -143,7 +143,7 @@ export default function EditarUsuarioPage({
                   descricao={formatDate(usuario.createdAt)}
                 />
                 <div className="pt-1">
-                  <span>Paróquias: </span>
+                  <span className="font-extrabold">Paróquias: </span>
                   {usuario.usuarioParoquias?.length ? (
                     <ul className="mt-1 space-y-0.5">
                       {usuario.usuarioParoquias.map((paroquia) => (
@@ -158,7 +158,7 @@ export default function EditarUsuarioPage({
                     </span>
                   )}
                 </div>
-                <div className="pt-1">
+                <div className="pt-3">
                   <span>Status: </span>
                   <Badge variant={usuario.active ? "default" : "destructive"}>
                     {usuario.active ? "Ativo" : "Inativo"}
