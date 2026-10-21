@@ -130,12 +130,12 @@ export default function EditarUsuarioPage({
 
 
       {!usuario.pessoa && (
-        <div className="my-2 w-full">
-          <Alert variant="destructive" className="max-w-md">
+        <div className="mt-2 mb-6 w-full">
+          <Alert variant="destructive" >
             <AlertCircleIcon />
-            <AlertTitle>Usuario sem pessoa associada</AlertTitle>
+            <AlertTitle>Usuario sem pessoa associada - Sera removido em breve!</AlertTitle>
             <AlertDescription>
-              Esse usuario nao tem uma pessoa associada. Cadastre uma pessoa e vincule.
+              Esse usuario nao tem uma pessoa associada. Todo usuário precisa estar numa comunidade e ter uma pessoa associada. Para associar uma pessoa a esse usuário, você precisa criar uma pessoa e depois associar a pessoa ao usuário.
             </AlertDescription>
           </Alert>
         </div>
