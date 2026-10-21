@@ -13,28 +13,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
+import { User } from "neocatecumenal";
 
 const DEFAULT_ROLE = "SECRETARIA_CNC";
 
-export type UsuarioParoquia = {
-  id: number;
-  descricao: string;
-};
-
-export type DashboardUser = {
-  id: string;
-  pessoaId?: number | null;
-  email: string;
-  whatsapp?: string | null;
-  role: string;
-  active: boolean;
-  verifiedWhatsapp?: boolean;
-  createdAt?: string;
-  usuarioParoquias?: UsuarioParoquia[];
-};
-
 interface FormUsuarioProps {
-  user: DashboardUser;
+  user: User;
   onSuccess?: () => void;
   onCancel?: () => void;
 }

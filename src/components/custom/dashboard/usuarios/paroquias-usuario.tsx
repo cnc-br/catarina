@@ -33,7 +33,6 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Paroquia } from "neocatecumenal";
-import type { UsuarioParoquia } from "./form-usuario";
 
 type Cidade = {
   id: number;
@@ -45,23 +44,34 @@ type Cidade = {
 
 type ParoquiasUsuarioProps = {
   userId: string;
-  usuarioParoquias: UsuarioParoquia[];
+  paroquias: Paroquia[];
+  onSalvo?: () => void;
 };
 
 export function ParoquiasUsuario({
   userId,
-  usuarioParoquias,
+  paroquias,
+  onSalvo,
 }: ParoquiasUsuarioProps) {
   const [cidades, setCidades] = useState<Cidade[]>([]);
   const [cidadesLoading, setCidadesLoading] = useState(true);
   const [comboboxOpen, setComboboxOpen] = useState(false);
   const [selectedCidade, setSelectedCidade] = useState<Cidade | null>(null);
-  const [paroquias, setParoquias] = useState<Paroquia[]>([]);
+  const [paroquiasCidade, setParoquiasCidade] = useState<Paroquia[]>([]);
   const [paroquiasLoading, setParoquiasLoading] = useState(false);
   const [paroquiasError, setParoquiasError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<number[]>(() =>
-    usuarioParoquias.map((paroquia) => paroquia.id),
+    paroquias.map((paroquia) => paroquia.id),
   );
+  const [prevParoquias, setPrevParoquias] = useState(paroquias);
+
+  // Sincroniza a seleção quando a prop com as paróquias atuais muda
+  // (o fetch do usuário na página é assíncrono). Ajuste em tempo de render
+  // conforme recomendado pela documentação do React (evita efeito com setState).
+  if (prevParoquias !== paroquias) {
+    setPrevParoquias(paroquias);
+    setSelectedIds(paroquias.map((paroquia) => paroquia.id));
+  }
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -121,13 +131,13 @@ export function ParoquiasUsuario({
         }
 
         const body = await response.json();
-        setParoquias(Array.isArray(body?.data) ? body.data : []);
+        setParoquiasCidade(Array.isArray(body?.data) ? body.data : []);
       } catch (err) {
         if (controller.signal.aborted) return;
         setParoquiasError(
           err instanceof Error ? err.message : "Erro desconhecido",
         );
-        setParoquias([]);
+        setParoquiasCidade([]);
       } finally {
         if (!controller.signal.aborted) {
           setParoquiasLoading(false);
@@ -167,6 +177,7 @@ export function ParoquiasUsuario({
       setSaveMessage(
         body?.message || "Paróquias salvas com sucesso",
       );
+      onSalvo?.();
     } catch (err) {
       setSaveError(
         err instanceof Error ? err.message : "Erro desconhecido",
@@ -261,7 +272,7 @@ export function ParoquiasUsuario({
         {selectedCidade &&
           !paroquiasLoading &&
           !paroquiasError &&
-          paroquias.length === 0 && (
+          paroquiasCidade.length === 0 && (
             <p className="text-muted-foreground text-sm">
               Nenhuma paróquia encontrada nessa cidade.
             </p>
@@ -270,7 +281,7 @@ export function ParoquiasUsuario({
         {selectedCidade &&
           !paroquiasLoading &&
           !paroquiasError &&
-          paroquias.length > 0 && (
+          paroquiasCidade.length > 0 && (
             <div className="space-y-4">
               <Table>
                 <TableHeader>
@@ -280,7 +291,7 @@ export function ParoquiasUsuario({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paroquias.map((paroquia) => (
+                  {paroquiasCidade.map((paroquia) => (
                     <TableRow key={paroquia.id}>
                       <TableCell>
                         <input
