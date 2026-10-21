@@ -45,25 +45,17 @@ export async function GET(
     const body = await response.json();
     const data = body.data ?? body;
 
-    const usuarioParoquias = Array.isArray(data.usuarioParoquias)
-      ? data.usuarioParoquias.map(
-          (paroquia: { id: number; descricao: string }) => ({
-            id: paroquia.id,
-            descricao: paroquia.descricao,
-          }),
-        )
-      : [];
-
     return NextResponse.json({
       id: data.id,
       pessoaId: data.pessoaId ?? null,
+      pessoa: data.pessoa ?? null,
       email: data.email,
       whatsapp: data.whatsapp ?? null,
       role: data.role,
       active: data.active,
       verifiedWhatsapp: data.verifiedWhatsapp,
       createdAt: data.createdAt,
-      usuarioParoquias,
+      paroquias: Array.isArray(data.paroquias) ? data.paroquias : [],
     });
   } catch (error) {
     console.error("Erro ao buscar usuário:", error);

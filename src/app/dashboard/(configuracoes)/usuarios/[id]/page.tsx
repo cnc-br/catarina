@@ -9,7 +9,6 @@ import UnauthorizedAccessAlert from "@/components/custom/ui/AlertSemCadastroOuPe
 import { SkeletonLoading } from "@/components/custom/ui/SkeletonLoading";
 import {
   FormUsuario,
-  type DashboardUser,
 } from "@/components/custom/dashboard/usuarios/form-usuario";
 import { ParoquiasUsuario } from "@/components/custom/dashboard/usuarios/paroquias-usuario";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +22,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ROLE_ADMIN } from "@/constants";
+import { User } from "neocatecumenal";
+import Link from "next/link";
 
 const ROUTE_LIST = "/dashboard/usuarios";
 
@@ -43,9 +44,9 @@ const formatPhone = (whatsapp?: string | null) => {
   return whatsapp;
 };
 
-const formatDate = (value?: string) => {
+const formatDate = (value?: string | Date) => {
   if (!value) return "—";
-  const date = new Date(value);
+  const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleDateString("pt-BR");
 };
@@ -58,9 +59,10 @@ export default function EditarUsuarioPage({
   const { id } = use(params);
   const router = useRouter();
   const { user } = useUser();
-  const [usuario, setUsuario] = useState<DashboardUser | null>(null);
+  const [usuario, setUsuario] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -80,7 +82,8 @@ export default function EditarUsuarioPage({
           throw new Error("Erro ao carregar usuário");
         }
 
-        const data = (await response.json()) as DashboardUser;
+        const data = (await response.json()) as User;
+        console.log("Fetched user data:", data);
         setUsuario(data);
       } catch (err) {
         if (controller.signal.aborted) return;
@@ -94,7 +97,7 @@ export default function EditarUsuarioPage({
 
     fetchUsuario();
     return () => controller.abort();
-  }, [id, router]);
+  }, [id, router, refreshKey]);
 
   if (user?.role !== ROLE_ADMIN) {
     return <UnauthorizedAccessAlert title="Usuários" />;
@@ -111,8 +114,8 @@ export default function EditarUsuarioPage({
   return (
     <div>
       <PageSubtitle
-        title={`Editar ${usuario.email}`}
-        subTitle={usuario.role}
+        title={`Editar ${usuario.pessoa?.nome || usuario.email}`}
+        subTitle={`Perfil do usuário: ${usuario.role}`}
         buttons={[
           {
             buttonText: "Voltar",
@@ -128,7 +131,7 @@ export default function EditarUsuarioPage({
           {!isEditing && (
             <Card className="w-full">
               <CardHeader>
-                <CardTitle className="text-2xl">{usuario.email}</CardTitle>
+                <CardTitle className="text-2xl">{usuario.pessoa?.nome || usuario.email}</CardTitle>
                 <CardDescription>Dados do usuário</CardDescription>
               </CardHeader>
               <CardContent className="space-y-1">
@@ -144,9 +147,9 @@ export default function EditarUsuarioPage({
                 />
                 <div className="pt-1">
                   <span className="font-extrabold">Paróquias: </span>
-                  {usuario.usuarioParoquias?.length ? (
+                  {usuario.paroquias?.length ? (
                     <ul className="mt-1 space-y-0.5">
-                      {usuario.usuarioParoquias.map((paroquia) => (
+                      {usuario.paroquias.map((paroquia) => (
                         <li key={paroquia.id} className="text-sm">
                           {paroquia.descricao}
                         </li>
@@ -165,9 +168,14 @@ export default function EditarUsuarioPage({
                   </Badge>
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button className="w-full" onClick={() => setIsEditing(true)}>
+              <CardFooter className="flex gap-2">
+                <Button className="w-1/2" onClick={() => setIsEditing(true)}>
                   Editar dados
+                </Button>
+                <Button variant={"secondary"} className="w-1/2" asChild>
+                  <Link href={`/dashboard/pessoas/${usuario.pessoaId}`}>
+                    Conferir pessoa
+                  </Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -185,7 +193,8 @@ export default function EditarUsuarioPage({
         <div className="lg:col-span-2">
           <ParoquiasUsuario
             userId={id}
-            usuarioParoquias={usuario.usuarioParoquias ?? []}
+            paroquias={usuario.paroquias}
+            onSalvo={() => setRefreshKey((key) => key + 1)}
           />
         </div>
       </div>
