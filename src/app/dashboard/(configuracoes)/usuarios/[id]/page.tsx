@@ -24,6 +24,8 @@ import {
 import { ROLE_ADMIN } from "@/constants";
 import { User } from "neocatecumenal";
 import Link from "next/link";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircleIcon } from "lucide-react";
 
 const ROUTE_LIST = "/dashboard/usuarios";
 
@@ -126,7 +128,21 @@ export default function EditarUsuarioPage({
         ]}
       />
 
+
+      {!usuario.pessoa && (
+        <div className="my-2 w-full">
+          <Alert variant="destructive" className="max-w-md">
+            <AlertCircleIcon />
+            <AlertTitle>Usuario sem pessoa associada</AlertTitle>
+            <AlertDescription>
+              Esse usuario nao tem uma pessoa associada. Cadastre uma pessoa e vincule.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       <div className="grid gap-4 lg:grid-cols-3 items-start">
+
         <div className="lg:col-span-1">
           {!isEditing && (
             <Card className="w-full">
@@ -172,11 +188,15 @@ export default function EditarUsuarioPage({
                 <Button className="w-1/2" onClick={() => setIsEditing(true)}>
                   Editar dados
                 </Button>
-                <Button variant={"secondary"} className="w-1/2" asChild>
-                  <Link href={`/dashboard/pessoas/${usuario.pessoaId}`}>
+                {usuario.pessoaId ? (
+                  <Button variant="secondary" className="w-1/2" asChild>
+                    <Link href={`/dashboard/pessoas/${usuario.pessoaId}`}>Conferir pessoa</Link>
+                  </Button>
+                ) : (
+                  <Button variant="secondary" className="w-1/2" disabled>
                     Conferir pessoa
-                  </Link>
-                </Button>
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           )}
