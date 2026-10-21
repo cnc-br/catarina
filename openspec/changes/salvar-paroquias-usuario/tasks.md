@@ -23,7 +23,7 @@
 
 ## 5. Integração
 
-- [ ] 5.1 Rodar `npm run lint` e conferir que não há erros de lint ou tipos em todo o projeto
+- [x] 5.1 Rodar `npm run lint` e conferir que não há erros de lint ou tipos em todo o projeto
 - [x] 5.2 Rodar `npm run build` e conferir que o build do Next.js conclui sem erros
 
 ## Workflow follow-up

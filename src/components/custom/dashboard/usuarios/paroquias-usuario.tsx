@@ -62,6 +62,17 @@ export function ParoquiasUsuario({
   const [selectedIds, setSelectedIds] = useState<number[]>(() =>
     usuarioParoquias.map((paroquia) => paroquia.id),
   );
+  const [prevUsuarioParoquias, setPrevUsuarioParoquias] = useState(
+    usuarioParoquias,
+  );
+
+  // Sincroniza a seleção quando a prop com as paróquias atuais muda
+  // (o fetch do usuário na página é assíncrono). Ajuste em tempo de render
+  // conforme recomendado pela documentação do React (evita efeito com setState).
+  if (prevUsuarioParoquias !== usuarioParoquias) {
+    setPrevUsuarioParoquias(usuarioParoquias);
+    setSelectedIds(usuarioParoquias.map((paroquia) => paroquia.id));
+  }
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
