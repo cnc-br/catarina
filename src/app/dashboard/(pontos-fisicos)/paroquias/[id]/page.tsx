@@ -4,6 +4,17 @@ import PageSubtitle from "@/components/custom/dashboard/page-subtitle";
 import ParoquiaForm from "@/components/custom/dashboard/paroquias/form-paroquia";
 import LabelData from "@/components/custom/dashboard/pessoa/label-data";
 import { SkeletonLoading } from "@/components/custom/ui/SkeletonLoading";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +42,54 @@ export default function EditarParoquiaPage() {
   const [paroquia, setParoquia] = useState<Paroquia>();
   const [editar, setEditar] = useState<boolean>(false);
   const [redirectNotFound, setRedirectNotFound] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(
+        `${BASE_URL}/api/ambrosio/paroquia/${paroquiaId}`,
+        { method: "DELETE" },
+      );
+
+      if (res.ok) {
+        toast({
+          title: `Paróquia excluída`,
+          variant: "default",
+          description: `Paróquia excluída com sucesso!`,
+        });
+        router.push("/dashboard/paroquias");
+        return;
+      }
+
+      let message = "Não foi possível excluir a paróquia.";
+      try {
+        const data = await res.json();
+        if (data?.message) {
+          message = data.message;
+        }
+      } catch {
+        // Corpo vazio ou não-JSON: mantém a mensagem padrão
+      }
+
+      toast({
+        title: `Paróquia não foi excluída!`,
+        variant: "destructive",
+        description: message,
+      });
+      setDeleteDialogOpen(false);
+    } catch {
+      toast({
+        title: "Erro de conexão",
+        variant: "destructive",
+        description: "Não foi possível conectar ao servidor. Tente novamente.",
+      });
+      setDeleteDialogOpen(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -131,6 +190,40 @@ export default function EditarParoquiaPage() {
                 <Button variant="outline" onClick={() => setEditar(true)}>
                   Editar paróquia
                 </Button>
+                <AlertDialog
+                  open={deleteDialogOpen}
+                  onOpenChange={setDeleteDialogOpen}
+                >
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={isDeleting}>
+                      Excluir paróquia
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent size="sm">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Excluir paróquia?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja excluir a paróquia{" "}
+                        {paroquia.descricao}? Essa ação não pode ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isDeleting}>
+                        Cancelar
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        variant="destructive"
+                        disabled={isDeleting}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          handleDelete();
+                        }}
+                      >
+                        {isDeleting ? "Excluindo..." : "Excluir"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardFooter>
             </Card>
           </div>
