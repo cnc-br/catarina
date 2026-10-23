@@ -21,6 +21,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { ROLE_ADMIN } from "@/constants";
 import { User } from "neocatecumenal";
 import Link from "next/link";
@@ -61,10 +73,58 @@ export default function EditarUsuarioPage({
   const { id } = use(params);
   const router = useRouter();
   const { user } = useUser();
+  const { toast } = useToast();
   const [usuario, setUsuario] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/ambrosio/user/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Usuário excluído",
+          variant: "default",
+          description: "Usuário excluído com sucesso!",
+        });
+        router.push(ROUTE_LIST);
+        return;
+      }
+
+      let message = "Não foi possível excluir o usuário.";
+      try {
+        const data = await response.json();
+        if (data?.message) {
+          message = data.message;
+        }
+      } catch {
+        // Corpo vazio ou não-JSON: mantém a mensagem padrão
+      }
+
+      toast({
+        title: "Usuário não foi excluído!",
+        variant: "destructive",
+        description: message,
+      });
+      setDeleteDialogOpen(false);
+    } catch {
+      toast({
+        title: "Erro de conexão",
+        variant: "destructive",
+        description: "Não foi possível conectar ao servidor. Tente novamente.",
+      });
+      setDeleteDialogOpen(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -112,6 +172,8 @@ export default function EditarUsuarioPage({
   if (!usuario) {
     return null;
   }
+
+  const isSelfUser = user != null && String(user.id) === String(usuario.id);
 
   return (
     <div>
@@ -184,18 +246,61 @@ export default function EditarUsuarioPage({
                   </Badge>
                 </div>
               </CardContent>
-              <CardFooter className="flex gap-2">
-                <Button className="w-1/2" onClick={() => setIsEditing(true)}>
-                  Editar dados
-                </Button>
-                {usuario.pessoaId ? (
-                  <Button variant="secondary" className="w-1/2" asChild>
-                    <Link href={`/dashboard/pessoas/${usuario.pessoaId}`}>Conferir pessoa</Link>
+              <CardFooter className="flex flex-col gap-2">
+                <div className="flex gap-2 w-full">
+                  <Button className="w-1/2" onClick={() => setIsEditing(true)}>
+                    Editar dados
                   </Button>
-                ) : (
-                  <Button variant="secondary" className="w-1/2" disabled>
-                    Conferir pessoa
-                  </Button>
+                  {usuario.pessoaId ? (
+                    <Button variant="secondary" className="w-1/2" asChild>
+                      <Link href={`/dashboard/pessoas/${usuario.pessoaId}`}>Conferir pessoa</Link>
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" className="w-1/2" disabled>
+                      Conferir pessoa
+                    </Button>
+                  )}
+                </div>
+                {!isSelfUser && (
+                  <AlertDialog
+                    open={deleteDialogOpen}
+                    onOpenChange={setDeleteDialogOpen}
+                  >
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        className="w-full"
+                        disabled={isDeleting}
+                      >
+                        Excluir usuário
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent size="sm">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir usuário?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir o usuário{" "}
+                          {usuario.pessoa?.nome || usuario.email}? Essa ação não
+                          pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isDeleting}>
+                          Cancelar
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          variant="destructive"
+                          disabled={isDeleting}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            handleDelete();
+                          }}
+                        >
+                          {isDeleting ? "Excluindo..." : "Excluir"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
               </CardFooter>
             </Card>
