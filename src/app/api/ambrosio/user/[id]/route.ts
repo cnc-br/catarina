@@ -185,3 +185,72 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+
+    if (!id) {
+      return NextResponse.json(
+        { message: "ID do usuário é obrigatório" },
+        { status: 400 },
+      );
+    }
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    // Chamada para a API externa
+    const response = await fetch(`${url}/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return NextResponse.json(
+          { message: "Usuário não encontrado" },
+          { status: 404 },
+        );
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        return NextResponse.json(
+          { message: "Você não tem permissão para excluir esse usuário" },
+          { status: response.status },
+        );
+      }
+
+      const errorData = await response.json().catch(() => ({}));
+      const message = Array.isArray(errorData?.message)
+        ? errorData.message[0]
+        : errorData?.message || "Erro ao excluir usuário";
+
+      return NextResponse.json(
+        { message },
+        { status: response.status },
+      );
+    }
+
+    if (response.status === 204) {
+      return new NextResponse(null, { status: 204 });
+    }
+
+    const userData = await response.json();
+
+    return NextResponse.json(userData, { status: response.status });
+  } catch (error) {
+    console.error("Erro ao excluir usuário:", error);
+
+    return NextResponse.json(
+      { message: "Erro interno do servidor" },
+      { status: 500 },
+    );
+  }
+}
