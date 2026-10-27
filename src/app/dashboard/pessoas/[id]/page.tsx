@@ -4,7 +4,9 @@ import PageSubtitle from "@/components/custom/dashboard/page-subtitle";
 import PessoaComunidade from "@/components/custom/dashboard/pessoa/comunidade/pessoaComunidade";
 import { DialogPessoaCasada } from "@/components/custom/dashboard/pessoa/dialog-casal/dialog-casal";
 import PessoaForm from "@/components/custom/dashboard/pessoa/form-pessoa";
+import DialogContato from "@/components/custom/dashboard/pessoa/dialog-contato/dialog-contato";
 import LabelData from "@/components/custom/dashboard/pessoa/label-data";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -43,6 +45,14 @@ export default function EditarPessoaPage({
     // Recarrega os dados após edição
     const pessoaData = await getPessoa(parseInt(id));
     setPessoa(pessoaData);
+  };
+
+  const handleContatoSalvo = async () => {
+    // Recarrega os dados para atualizar a listagem de contatos do card
+    const pessoaData = await getPessoa(parseInt(id));
+    if (pessoaData) {
+      setPessoa(pessoaData);
+    }
   };
 
   useEffect(() => {
@@ -226,6 +236,62 @@ export default function EditarPessoaPage({
                   Cadastrar endereços
                 </Link>
               </Button>
+            </CardFooter>
+          </Card>
+
+          <Card className="flex flex-col h-full">
+            <CardHeader>
+              <CardTitle>Contatos</CardTitle>
+              <CardDescription>Dados de contato de {pessoa.nome}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1">
+              {pessoa.contatos && pessoa.contatos.length > 0 ? (
+                <div>
+                  {pessoa.contatos.map((contato) => (
+                    <div
+                      key={contato.id}
+                      className="mb-2 text-sm flex flex-col gap-0.5"
+                    >
+                      {contato.tipoTelefone && (
+                        <LabelData
+                          titulo="Tipo de telefone"
+                          descricao={contato.tipoTelefone}
+                        />
+                      )}
+                      {contato.telefone && (
+                        <LabelData
+                          titulo="Telefone"
+                          descricao={contato.telefone}
+                        />
+                      )}
+                      {contato.email && (
+                        <LabelData titulo="E-mail" descricao={contato.email} />
+                      )}
+                      {contato.observacao && (
+                        <LabelData
+                          titulo="Observação"
+                          descricao={contato.observacao}
+                        />
+                      )}
+                      {contato.contatoPrincipal && (
+                        <Badge variant="outline">Principal</Badge>
+                      )}
+                      <Separator />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Contatos dessa pessoa nao foi informada
+                </p>
+              )}
+            </CardContent>
+            <CardFooter className="mt-auto">
+              <DialogContato
+                pessoaId={pessoa.id}
+                urlBase={BASE_URL}
+                onContatoSalvo={handleContatoSalvo}
+              />
             </CardFooter>
           </Card>
 

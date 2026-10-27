@@ -69,6 +69,7 @@ export async function GET(
     },
     carismas: data.carismas || [],
     enderecos: data.enderecos || [],
+    contatos: data.contatos || [],
     comunidade: data.comunidade,
   };
 
