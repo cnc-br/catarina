@@ -121,6 +121,10 @@ const data = {
           url: "/dashboard/etapas",
         },
         {
+          title: "Estado Civil",
+          url: "/dashboard/estado-civil",
+        },
+        {
           title: "Usuários",
           url: "/dashboard/usuarios",
         },
