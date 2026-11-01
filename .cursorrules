@@ -1,0 +1,11 @@
+# Cursor Rules — Catarina (Frontend Next.js CNC-Gestão)
+
+- Stack: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Radix UI, Cypress.
+- Governança Canônica: gestao-devsecops/specs/003-frontend-catarina/SPEC.md.
+- Regras:
+  1. Next.js Docs Primeiro: Antes de codificar, consulte a documentação oficial em node_modules/next/dist/docs/.
+  2. Server Components por Padrão: Páginas e layouts são RSC; use 'use client' estritamente para interatividades pontuais.
+  3. Design System & MCP: Componentização via Shadcn / Radix UI integrado com o MCP 'shadcn' (.mcp.json).
+  4. Validação de Formulários: react-hook-form acoplado com schemas declarativos zod.
+  5. Segurança de Sessão: Cookies HttpOnly, sem armazenamento de tokens sensíveis em localStorage.
+  6. Testes: Cypress para fluxos E2E críticos.

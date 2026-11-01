@@ -8,16 +8,49 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-## Agent skills
+# AGENTS.md — Manual de Operação de Agentes IA (Catarina)
 
-### Issue tracker
+Este documento orienta todos os agentes de IA (Antigravity/Gemini, GitHub Copilot, OpenSpec/OpenCode, Cursor, Claude Code e Hermes) operando no repositório `catarina`.
 
-Issues e specs vivem como issues do GitHub em `leonardocintra/catarina` (via CLI `gh`). Veja `docs/agents/issue-tracker.md`.
+---
 
-### Triage labels
+## 1. Contexto do Repositório
+- **Papel**: Frontend Web SPA/SSR responsivo do sistema CNC-Gestão.
+- **Stack**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Radix UI / Shadcn, Cypress.
+- **Porta Local**: `3000`. **Produção**: Roteado pelo Nginx em `/` e `/api/catarina/`.
+- **Governança Canônica**: [gestao-devsecops/specs/003-frontend-catarina/SPEC.md](https://github.com/cnc-br/gestao-devsecops/blob/main/specs/003-frontend-catarina/SPEC.md).
 
-Cinco papéis canônicos de triagem, com cada label igual ao nome do papel. Veja `docs/agents/triage-labels.md`.
+---
 
-### Domain docs
+## 2. Princípios Mandatórios de Interface & Engenharia
 
-Layout single-context (`CONTEXT.md` + `docs/adr/` na raiz). Veja `docs/agents/domain.md`.
+### 2.1 React Server Components (RSC)
+- Adote Server Components por padrão em páginas, layouts e componentes de exibição de dados.
+- Utilize `'use client'` exclusivamente em folhas da árvore que exijam eventos de mouse/teclado, hooks de ciclo de vida (`useState`, `useEffect`) ou APIs do navegador.
+
+### 2.2 Servidor MCP Shadcn (`.mcp.json`)
+- Para descobrir ou injetar novos componentes da biblioteca Shadcn/Radix, utilize as ferramentas fornecidas pelo MCP `shadcn` (`npx shadcn@latest mcp`).
+
+### 2.3 Formulários & Validação
+- Todos os formulários devem ser geridos via `react-hook-form` e validados via schemas declarativos `zod`.
+
+### 2.4 Fluxos OpenSpec (`.opencode/commands/`)
+- Ao propor uma alteração (`opsx-propose`), gere apenas os artefatos de planejamento (`proposal.md`, `specs/`, `design.md`, `tasks.md`).
+- **NÃO** edite código de produção durante o passo de proposta. A implementação ocorre exclusivamente no comando `opsx-apply`.
+
+---
+
+## 3. Agent Skills & Issue Tracker
+
+### Issue Tracker via GitHub CLI (`gh`)
+- As issues deste repositório vivem no GitHub. Veja [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md).
+- Operações de wayfinding com labels `wayfinder:map` e dependências `blocked_by`.
+
+### Triage Labels
+Usa os 5 papéis canônicos de triagem: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. Veja [`docs/agents/triage-labels.md`](docs/agents/triage-labels.md).
+
+### Domain Docs & Glossário Ubíquo
+Consulte [`docs/agents/domain.md`](docs/agents/domain.md) e [`CONTEXT.md`](CONTEXT.md). Use estritamente:
+- **Usuário**: Credencial de acesso (email, WhatsApp, papel).
+- **Pessoa**: Fiel cadastrado na base (schema `saopedro`).
+- **Papel**: Nível de autorização (`ADMIN`, `SECRETARIA_CNC`, `NAO_IDENTIFICADO`).
