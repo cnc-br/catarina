@@ -63,7 +63,6 @@ export function PassarComunidadeDeEtapa({
       .max(80, { message: "Descrição deve ter no máximo 80 caracteres." })
       .optional(),
     dataInicio: z.date().optional(),
-    dataFim: z.date().optional(),
     observacao: z.string().max(250).optional(),
   });
 
@@ -72,7 +71,6 @@ export function PassarComunidadeDeEtapa({
     defaultValues: {
       etapa: etapaAtual ? etapaAtual.id.toString() : "",
       dataInicio: etapa?.dataInicio ? new Date(etapa.dataInicio) : undefined,
-      dataFim: etapa?.dataFim ? new Date(etapa.dataFim) : undefined,
       local: etapa?.localConvivencia || "",
       observacao: etapa?.observacao || "",
     },
@@ -267,35 +265,6 @@ export function PassarComunidadeDeEtapa({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Data convivência</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        placeholder="Data da convivência"
-                        value={formatDateInputValue(field.value)}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value
-                              ? new Date(e.target.value)
-                              : undefined,
-                          )
-                        }
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                        disabled={field.disabled}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="dataFim"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data final etapa</FormLabel>
                     <FormControl>
                       <Input
                         type="date"

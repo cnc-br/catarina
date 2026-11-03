@@ -49,7 +49,6 @@ export function useComunidadeById({
         comunidadeEtapas: data.comunidadeEtapas?.map((ce: ComunidadeEtapa) => ({
           ...ce,
           dataInicio: ce?.dataInicio ? new Date(ce.dataInicio) : undefined,
-          dataFim: ce?.dataFim ? new Date(ce.dataFim) : undefined,
         })),
       };
 
