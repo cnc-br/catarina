@@ -66,14 +66,16 @@ export function PassarComunidadeDeEtapa({
     observacao: z.string().max(250).optional(),
   });
 
+  const getDefaultValues = () => ({
+    etapa: etapaAtual ? etapaAtual.id.toString() : "",
+    dataInicio: etapa?.dataInicio ? new Date(etapa.dataInicio) : undefined,
+    local: etapa?.localConvivencia || "",
+    observacao: etapa?.observacao || "",
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      etapa: etapaAtual ? etapaAtual.id.toString() : "",
-      dataInicio: etapa?.dataInicio ? new Date(etapa.dataInicio) : undefined,
-      local: etapa?.localConvivencia || "",
-      observacao: etapa?.observacao || "",
-    },
+    defaultValues: getDefaultValues(),
   });
 
   useEffect(() => {
@@ -113,6 +115,13 @@ export function PassarComunidadeDeEtapa({
 
     carregarEtapas();
   }, []);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      form.reset(getDefaultValues());
+    }
+    setOpen(nextOpen);
+  };
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     let url = `/api/ambrosio/comunidade/${comunidadeId}/etapa`;
@@ -188,7 +197,7 @@ export function PassarComunidadeDeEtapa({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <form>
         <DialogTrigger asChild>
           <Button variant="destructive" size="sm">
