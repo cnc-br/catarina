@@ -59,7 +59,7 @@ export default function EditarComunidadePage({
       <TableRow key={ce.id}>
         <TableCell className="font-medium">{ce.etapa.descricao}</TableCell>
         <TableCell className="text-right">
-          {formatDate(ce.dataInicio)} / {formatDate(ce.dataFim)}
+          {formatDate(ce.dataInicio)}
         </TableCell>
         <TableCell>Não informado</TableCell>
         <TableCell className="text-right">
@@ -159,7 +159,7 @@ export default function EditarComunidadePage({
                   <TableHeader>
                     <TableRow>
                       <TableHead className="">Etapa</TableHead>
-                      <TableHead className="text-right">Inicio / Fim</TableHead>
+                      <TableHead className="text-right">Data Etapa</TableHead>
                       <TableHead>Catequistas</TableHead>
                       <TableHead className="text-right">Ação</TableHead>
                     </TableRow>

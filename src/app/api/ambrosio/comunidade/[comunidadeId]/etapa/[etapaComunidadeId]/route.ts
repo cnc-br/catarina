@@ -18,7 +18,6 @@ export async function PATCH(
     observacao: payload.observacao,
     localConvivencia: payload.local,
     dataInicio: payload.dataInicio,
-    dataFim: payload.dataFim,
   };
 
   const response = await fetch(
