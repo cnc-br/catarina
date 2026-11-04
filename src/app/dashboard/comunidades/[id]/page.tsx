@@ -27,6 +27,7 @@ import ComunidadeForm from "@/components/custom/dashboard/comunidade/form-comuni
 import { Badge } from "@/components/ui/badge";
 import { InfoIcon, UsersIcon } from "lucide-react";
 import { useComunidadeById } from "@/hooks/useComunidadeById";
+import { ordenarEtapasComunidade } from "@/lib/ordenarEtapasComunidade";
 
 export default function EditarComunidadePage({
   params,
@@ -45,14 +46,8 @@ export default function EditarComunidadePage({
     return <SkeletonLoading mensagem="Carregando comunidade ..." />;
 
   const renderEtapasRows = () => {
-    // Aqui esta ordenando por data de criação, para garantir que as etapas sejam exibidas na ordem correta, mesmo que tenham sido criadas fora de ordem ou editadas
-    // posteriormente. Assim, a linha mais antiga (primeira etapa) aparecerá primeiro, e a mais recente (etapa atual) aparecerá por último.
-    const etapasOrdenadas = [...comunidade.comunidadeEtapas].sort(
-      (a: ComunidadeEtapa, b: ComunidadeEtapa) => {
-        const aCreatedAt = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const bCreatedAt = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return aCreatedAt - bCreatedAt;
-      },
+    const etapasOrdenadas = ordenarEtapasComunidade(
+      comunidade.comunidadeEtapas,
     );
 
     return etapasOrdenadas.map((ce: ComunidadeEtapa) => (
