@@ -47,12 +47,16 @@ export default function EditarPessoaPage({
     setPessoa(pessoaData);
   };
 
-  const handleContatoSalvo = async () => {
-    // Recarrega os dados para atualizar a listagem de contatos do card
+  const recarregarPessoa = async () => {
     const pessoaData = await getPessoa(parseInt(id));
     if (pessoaData) {
       setPessoa(pessoaData);
     }
+  };
+
+  const handleContatoSalvo = async () => {
+    // Recarrega os dados para atualizar a listagem de contatos do card
+    await recarregarPessoa();
   };
 
   useEffect(() => {
@@ -177,6 +181,7 @@ export default function EditarPessoaPage({
               <PessoaComunidade
                 pessoaId={pessoa.id}
                 triggerClassName="w-full"
+                onComunidadeVinculada={recarregarPessoa}
               />
             </CardFooter>
           </Card>
@@ -328,7 +333,11 @@ export default function EditarPessoaPage({
               </CardContent>
               <CardFooter className="mt-auto">
                 {!pessoa.conjugue && (
-                  <DialogPessoaCasada sexo={pessoa.sexo} pessoaId={pessoa.id} />
+                  <DialogPessoaCasada
+                    sexo={pessoa.sexo}
+                    pessoaId={pessoa.id}
+                    onConjugueVinculado={recarregarPessoa}
+                  />
                 )}
               </CardFooter>
             </Card>
