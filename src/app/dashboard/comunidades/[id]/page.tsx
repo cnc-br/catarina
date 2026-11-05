@@ -2,6 +2,7 @@
 
 import PageSubtitle from "@/components/custom/dashboard/page-subtitle";
 import { use, useState } from "react";
+import Link from "next/link";
 import { SkeletonLoading } from "@/components/custom/ui/SkeletonLoading";
 import { BASE_URL } from "@/lib/utils";
 import { ComunidadeEtapa } from "neocatecumenal";
@@ -180,9 +181,51 @@ export default function EditarComunidadePage({
               <CardTitle>Carismas da comunidade</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="italic text-slate-500">
-                Em breve carismas da comunidade
-              </div>
+              {comunidade.carismas && comunidade.carismas.length > 0 ? (
+                <div className="flex flex-col space-y-4">
+                  {comunidade.carismas.map((carisma) => (
+                    <div key={carisma.id}>
+                      <div className="text-base font-semibold">
+                        {carisma.descricao}
+                      </div>
+                      <ul className="mt-1 list-disc pl-5">
+                        {carisma.pessoas.map((pessoa) => (
+                          <li key={pessoa.id}>
+                            {pessoa.conjugue ? (
+                              <>
+                                <Link
+                                  href={`/dashboard/pessoas/${pessoa.id}`}
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  {pessoa.nome}
+                                </Link>
+                                {" e "}
+                                <Link
+                                  href={`/dashboard/pessoas/${pessoa.conjugue.id}`}
+                                  className="text-blue-600 hover:underline"
+                                >
+                                  {pessoa.conjugue.nome}
+                                </Link>
+                              </>
+                            ) : (
+                              <Link
+                                href={`/dashboard/pessoas/${pessoa.id}`}
+                                className="text-blue-600 hover:underline"
+                              >
+                                {pessoa.nome}
+                              </Link>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="italic text-slate-500">
+                  Nenhum carisma cadastrado para esta comunidade
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
