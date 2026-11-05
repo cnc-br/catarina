@@ -69,7 +69,7 @@ export default function CarismasPage() {
           <AlertTitle>Observação</AlertTitle>
           <AlertDescription>
             Há carismas que o casal são automaticamente vinculados. Esses estão
-            marcados com 'Casal anda junto'.
+            marcados com &apos;Casal anda junto&apos;.
           </AlertDescription>
         </Alert>
       </div>
