@@ -65,7 +65,7 @@ export default function EditarDiocesePage() {
       try {
         const [resDiocese] = await Promise.all([getDiocese()]);
         setDiocese(resDiocese);
-      } catch (error: any) {
+      } catch (error) {
         toast({
           title: `Erro ao buscar diocese`,
           variant: "destructive",

@@ -6,7 +6,7 @@ import { SkeletonLoading } from "@/components/custom/ui/SkeletonLoading";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, HeartHandshake } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type EstadoCivil = {
   id: number;
@@ -17,46 +17,59 @@ export default function EstadoCivilPage() {
   const [estadosCivil, setEstadosCivil] = useState<EstadoCivil[]>([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState("");
-
-  const carregarEstadosCivil = useCallback(async () => {
-    try {
-      const res = await fetch("/api/ambrosio/configuracoes/estadoCivil", {
-        cache: "no-store",
-      });
-
-      if (!res.ok) {
-        throw new Error("Nao foi possivel carregar os estados civis.");
-      }
-
-      const payload = await res.json();
-      const lista = Array.isArray(payload)
-        ? payload
-        : Array.isArray(payload?.data)
-          ? payload.data
-          : [];
-
-      const estadosCivilNormalizados = lista
-        .map((item: Partial<EstadoCivil>) => ({
-          id: Number(item.id),
-          descricao: String(item.descricao ?? ""),
-        }))
-        .filter(
-          (item: EstadoCivil) => Number.isFinite(item.id) && item.descricao,
-        );
-
-      setEstadosCivil(estadosCivilNormalizados);
-      setErro("");
-    } catch (error) {
-      console.error(error);
-      setErro("Nao foi possivel carregar os estados civis.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
+    let ativo = true;
+
+    const carregarEstadosCivil = async () => {
+      try {
+        const res = await fetch("/api/ambrosio/configuracoes/estadoCivil", {
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          throw new Error("Nao foi possivel carregar os estados civis.");
+        }
+
+        const payload = await res.json();
+        const lista = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+            ? payload.data
+            : [];
+
+        const estadosCivilNormalizados = lista
+          .map((item: Partial<EstadoCivil>) => ({
+            id: Number(item.id),
+            descricao: String(item.descricao ?? ""),
+          }))
+          .filter(
+            (item: EstadoCivil) => Number.isFinite(item.id) && item.descricao,
+          );
+
+        if (ativo) {
+          setEstadosCivil(estadosCivilNormalizados);
+          setErro("");
+        }
+      } catch (error) {
+        console.error(error);
+        if (ativo) {
+          setErro("Nao foi possivel carregar os estados civis.");
+        }
+      } finally {
+        if (ativo) {
+          setLoading(false);
+        }
+      }
+    };
+
     carregarEstadosCivil();
-  }, [carregarEstadosCivil]);
+
+    return () => {
+      ativo = false;
+    };
+  }, [refreshKey]);
 
   const totalEstadosCivil = useMemo(
     () => estadosCivil.length,
@@ -77,7 +90,9 @@ export default function EstadoCivilPage() {
               <HeartHandshake className="h-5 w-5" />
               Estados Civis
             </span>
-            <DialogEstadoCivil onSuccess={carregarEstadosCivil} />
+            <DialogEstadoCivil
+              onSuccess={() => setRefreshKey((key) => key + 1)}
+            />
           </CardTitle>
           <CardDescription>
             Opcoes de estado civil disponiveis para as pessoas do Caminho

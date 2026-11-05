@@ -16,7 +16,7 @@ Este documento orienta todos os agentes de IA (Antigravity/Gemini, GitHub Copilo
 
 ## 1. Contexto do Repositório
 - **Papel**: Frontend Web SPA/SSR responsivo do sistema CNC-Gestão.
-- **Stack**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Radix UI / Shadcn, Cypress.
+- **Stack**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Radix UI / Shadcn, Cypress.
 - **Porta Local**: `3000`. **Produção**: Roteado pelo Nginx em `/` e `/api/catarina/`.
 - **Governança Canônica**: [gestao-devsecops/specs/003-frontend-catarina/SPEC.md](https://github.com/cnc-br/gestao-devsecops/blob/main/specs/003-frontend-catarina/SPEC.md).
 

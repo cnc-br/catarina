@@ -4,6 +4,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   ReactNode,
 } from "react";
@@ -25,33 +26,52 @@ interface UserProviderProps {
 export function UserProvider({ children }: UserProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const fetchUserData = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/ambrosio/auth/me");
-      if (res.ok) {
-        const response = await res.json();
-        const data = response.data;
-        setUser(data);
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar dados do usuário:", error);
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshUser = async () => {
-    await fetchUserData();
-  };
+  const [refreshKey, setRefreshKey] = useState(0);
+  const pendingRefresh = useRef<(() => void) | null>(null);
 
   useEffect(() => {
+    let ativo = true;
+
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch("/api/ambrosio/auth/me");
+        if (res.ok) {
+          const response = await res.json();
+          if (ativo) {
+            setUser(response.data);
+          }
+        } else if (ativo) {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do usuário:", error);
+        if (ativo) {
+          setUser(null);
+        }
+      } finally {
+        if (ativo) {
+          setLoading(false);
+        }
+        pendingRefresh.current?.();
+        pendingRefresh.current = null;
+      }
+    };
+
     fetchUserData();
-  }, []);
+
+    return () => {
+      ativo = false;
+    };
+  }, [refreshKey]);
+
+  const refreshUser = () => {
+    setLoading(true);
+    return new Promise<void>((resolve) => {
+      pendingRefresh.current?.();
+      pendingRefresh.current = resolve;
+      setRefreshKey((key) => key + 1);
+    });
+  };
 
   const value = {
     user,

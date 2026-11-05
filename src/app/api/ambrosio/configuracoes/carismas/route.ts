@@ -8,9 +8,7 @@ export async function GET() {
   const token = cookieStore.get("token")?.value;
 
   const res = await fetch(url, {
-    next: {
-      revalidate: 30,
-    },
+    cache: "no-store",
     headers: {
       Authorization: `Bearer ${token}`,
     },

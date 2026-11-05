@@ -44,7 +44,7 @@ export default function EditarPaisPage() {
       try {
         const [resPais] = await Promise.all([getPais()]);
         setPais(resPais);
-      } catch (error: any) {
+      } catch (error) {
         console.error(error);
       }
     };
