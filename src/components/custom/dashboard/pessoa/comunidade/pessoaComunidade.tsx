@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogClose,
@@ -23,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Comunidade, Paroquia } from "neocatecumenal";
+import { NAO_FOI_CADASTRADO } from "@/constants";
 
 type PessoaComunidadeProps = {
   pessoaId: number;
@@ -36,6 +38,33 @@ const getParoquiaLabel = (paroquia: Paroquia) => {
   return `${nomeParoquia} (${cidade} / ${paroquia.endereco?.cidade?.estado?.sigla || "UF nao informada"})`;
 };
 
+function renderResultadoComunidade(comunidadeEncontrada: Comunidade) {
+  const etapaDaComunidade =
+    comunidadeEncontrada.etapaAtual?.descricao || NAO_FOI_CADASTRADO;
+  const responsavel =
+    comunidadeEncontrada.carismas
+      ?.find((carisma) => carisma.descricao === "Responsável")
+      ?.pessoas?.[0]?.nome || NAO_FOI_CADASTRADO;
+
+  return (
+    <div className="space-y-1 font-light">
+      <p>
+        Comunidade <strong>{comunidadeEncontrada.numeroDaComunidade}</strong> da
+        paróquia{" "}
+        <strong>{getParoquiaLabel(comunidadeEncontrada.paroquia)}</strong>!
+      </p>
+      <p>
+        Essa comunidade possui{" "}
+        <strong>{comunidadeEncontrada.quantidadeMembros || 0} irmãos</strong> e
+        está na etapa <strong>{etapaDaComunidade}</strong>.
+      </p>
+      <p>
+        Responsável: <strong>{responsavel}</strong>
+      </p>
+    </div>
+  );
+}
+
 export default function PessoaComunidade({
   pessoaId,
   triggerClassName,
@@ -44,7 +73,7 @@ export default function PessoaComunidade({
   const [open, setOpen] = useState(false);
   const [numeroComunidade, setNumeroComunidade] = useState("");
   const [paroquiaId, setParoquiaId] = useState("");
-  const [resultadoPesquisa, setResultadoPesquisa] = useState("");
+  const [resultadoPesquisa, setResultadoPesquisa] = useState<ReactNode>("");
   const [paroquias, setParoquias] = useState<Paroquia[]>([]);
   const [loadingParoquias, setLoadingParoquias] = useState(false);
   const [loadingPesquisa, setLoadingPesquisa] = useState(false);
@@ -125,10 +154,7 @@ export default function PessoaComunidade({
 
       if (res.ok && comunidadeEncontrada) {
         setComunidade(comunidadeEncontrada);
-        setResultadoPesquisa(
-          `Comunidade ${comunidadeEncontrada.numeroDaComunidade} da paróquia ${getParoquiaLabel(paroquiaSelecionada)} encontrada! 
-          \n Essa comunidade possui ${comunidadeEncontrada.quantidadeMembros || 0} irmãos e esta na etapa ${comunidadeEncontrada.etapaAtual.descricao} \n Responsável:  `,
-        );
+        setResultadoPesquisa(renderResultadoComunidade(comunidadeEncontrada));
       } else {
         setComunidade(null);
         setResultadoPesquisa(
@@ -249,9 +275,13 @@ export default function PessoaComunidade({
           </Button>
 
           {resultadoPesquisa ? (
-            <div className="rounded-md border bg-muted/40 px-4 py-3 text-sm">
-              {resultadoPesquisa}
-            </div>
+            <Alert className="bg-muted/40">
+              {typeof resultadoPesquisa === "string" ? (
+                <AlertDescription>{resultadoPesquisa}</AlertDescription>
+              ) : (
+                resultadoPesquisa
+              )}
+            </Alert>
           ) : null}
         </div>
 
