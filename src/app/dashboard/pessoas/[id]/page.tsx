@@ -353,13 +353,13 @@ function handleCarismas(pessoa: Pessoa) {
 
   // Separar por tipo
   const primitivos = carismas.filter(
-    (c: any) => c.tipo === TipoCarismaEnum.PRIMITIVO,
+    (c) => c.tipo === TipoCarismaEnum.PRIMITIVO,
   );
   const vinculados = carismas.filter(
-    (c: any) => c.tipo === TipoCarismaEnum.VINCULADO,
+    (c) => c.tipo === TipoCarismaEnum.VINCULADO,
   );
   const servicos = carismas.filter(
-    (c: any) => c.tipo === TipoCarismaEnum.SERVICO,
+    (c) => c.tipo === TipoCarismaEnum.SERVICO,
   );
 
   // Se não houver nenhum carisma cadastrado
@@ -375,7 +375,7 @@ function handleCarismas(pessoa: Pessoa) {
         <div>
           <h4 className="font-semibold text-sm mb-2">Primitivos</h4>
           <ul className="space-y-1">
-            {primitivos.map((c: any) => (
+            {primitivos.map((c) => (
               <li key={c.id} className="text-sm text-muted-foreground">
                 • {c.descricao}
               </li>
@@ -388,7 +388,7 @@ function handleCarismas(pessoa: Pessoa) {
         <div>
           <h4 className="font-semibold text-sm mb-2">Vinculados</h4>
           <ul className="space-y-1">
-            {vinculados.map((c: any) => (
+            {vinculados.map((c) => (
               <li key={c.id} className="text-sm text-muted-foreground">
                 • {c.descricao}
               </li>
@@ -401,7 +401,7 @@ function handleCarismas(pessoa: Pessoa) {
         <div>
           <h4 className="font-semibold text-sm mb-2">Serviços</h4>
           <ul className="space-y-1">
-            {servicos.map((c: any) => (
+            {servicos.map((c) => (
               <li key={c.id} className="text-sm text-muted-foreground">
                 • {c.descricao}
               </li>

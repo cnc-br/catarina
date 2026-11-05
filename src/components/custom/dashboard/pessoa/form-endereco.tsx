@@ -74,8 +74,8 @@ export default function EnderecoForm({ pessoa, urlBase }: EnderecoFormProps) {
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    let url = `${urlBase}/api/ambrosio/endereco`;
-    let method = "POST";
+    const url = `${urlBase}/api/ambrosio/endereco`;
+    const method = "POST";
 
     const endereco: Partial<IEndereco> = {
       cep: values.cep,

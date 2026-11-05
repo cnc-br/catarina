@@ -17,6 +17,61 @@ interface CarismaData {
   servico: Carisma[];
 }
 
+interface CarismaGridProps {
+  title: string;
+  carismas: Carisma[];
+  selectedIds: number[];
+  onToggle: (id: number) => void;
+}
+
+function CarismaGrid({
+  title,
+  carismas,
+  selectedIds,
+  onToggle,
+}: CarismaGridProps) {
+  const isSelected = (id: number) => selectedIds.includes(id);
+
+  return (
+    <div className="mb-8">
+      <h2 className="text-xl font-semibold mb-4">
+        {title} ({carismas.length})
+      </h2>
+      {carismas.length === 0 ? (
+        <p className="text-muted-foreground text-sm">
+          Nenhum carisma disponível
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {carismas.map((c) => (
+            <div
+              key={c.id}
+              onClick={() => onToggle(c.id)}
+              className={`border rounded-lg p-4 cursor-pointer flex items-center justify-between transition-colors ${
+                isSelected(c.id)
+                  ? "bg-blue-100 border-blue-500 dark:bg-blue-950"
+                  : "bg-white hover:bg-gray-50 dark:bg-slate-950"
+              }`}
+            >
+              <div className="flex-1">
+                <span className="font-medium text-sm block">{c.descricao}</span>
+                {c.casalAndaJunto && (
+                  <span className="text-xs text-muted-foreground">
+                    Casal anda junto
+                  </span>
+                )}
+              </div>
+              {isSelected(c.id) && (
+                <CheckIcon className="text-blue-500 shrink-0 ml-2" size={18} />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PessoaCarismaPage() {
   const params = useParams();
   const router = useRouter();
@@ -47,13 +102,13 @@ export default function PessoaCarismaPage() {
         // Separar por tipo
         const todosCarismas = dataCarismas.data || [];
         const primitivos = todosCarismas.filter(
-          (c: any) => c.tipo === TipoCarismaEnum.PRIMITIVO,
+          (c: Carisma) => c.tipo === TipoCarismaEnum.PRIMITIVO,
         );
         const vinculados = todosCarismas.filter(
-          (c: any) => c.tipo === TipoCarismaEnum.VINCULADO,
+          (c: Carisma) => c.tipo === TipoCarismaEnum.VINCULADO,
         );
         const servicos = todosCarismas.filter(
-          (c: any) => c.tipo === TipoCarismaEnum.SERVICO,
+          (c: Carisma) => c.tipo === TipoCarismaEnum.SERVICO,
         );
 
         setCarismaData({
@@ -72,7 +127,7 @@ export default function PessoaCarismaPage() {
         setPessoa(pessoaData);
         // Carismas já vêm em um único array com tipo
         const selectedCarismas = (pessoaData.carismas || []).map(
-          (c: any) => c.id,
+          (c: Carisma) => c.id,
         );
         setSelectedIds(selectedCarismas);
       } catch (error) {
@@ -94,8 +149,6 @@ export default function PessoaCarismaPage() {
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
-
-  const isSelected = (id: number) => selectedIds.includes(id);
 
   const salvar = async () => {
     if (selectedIds.length === 0) {
@@ -148,51 +201,6 @@ export default function PessoaCarismaPage() {
     }
   };
 
-  const Grid = ({
-    title,
-    carismas,
-  }: {
-    title: string;
-    carismas: Carisma[];
-  }) => (
-    <div className="mb-8">
-      <h2 className="text-xl font-semibold mb-4">
-        {title} ({carismas.length})
-      </h2>
-      {carismas.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          Nenhum carisma disponível
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {carismas.map((c) => (
-            <div
-              key={c.id}
-              onClick={() => toggle(c.id)}
-              className={`border rounded-lg p-4 cursor-pointer flex items-center justify-between transition-colors ${
-                isSelected(c.id)
-                  ? "bg-blue-100 border-blue-500 dark:bg-blue-950"
-                  : "bg-white hover:bg-gray-50 dark:bg-slate-950"
-              }`}
-            >
-              <div className="flex-1">
-                <span className="font-medium text-sm block">{c.descricao}</span>
-                {c.casalAndaJunto && (
-                  <span className="text-xs text-muted-foreground">
-                    Casal anda junto
-                  </span>
-                )}
-              </div>
-              {isSelected(c.id) && (
-                <CheckIcon className="text-blue-500 shrink-0 ml-2" size={18} />
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-
   if (isLoading) {
     return <SkeletonLoading mensagem="Carregando carismas ..." />;
   }
@@ -219,11 +227,26 @@ export default function PessoaCarismaPage() {
       />
 
       <div className="p-4 max-w-4xl mx-auto">
-        <Grid title="Carismas Primitivos" carismas={carismaData.primitivo} />
+        <CarismaGrid
+          title="Carismas Primitivos"
+          carismas={carismaData.primitivo}
+          selectedIds={selectedIds}
+          onToggle={toggle}
+        />
         <Separator className="my-6" />
-        <Grid title="Carismas Vinculados" carismas={carismaData.vinculado} />
+        <CarismaGrid
+          title="Carismas Vinculados"
+          carismas={carismaData.vinculado}
+          selectedIds={selectedIds}
+          onToggle={toggle}
+        />
         <Separator className="my-6" />
-        <Grid title="Carismas de Serviço" carismas={carismaData.servico} />
+        <CarismaGrid
+          title="Carismas de Serviço"
+          carismas={carismaData.servico}
+          selectedIds={selectedIds}
+          onToggle={toggle}
+        />
         <Separator className="my-6" />
 
         <div className="flex gap-2">

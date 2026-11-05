@@ -56,7 +56,7 @@ export default function LocalidadeForm({
         const [dataLocalidade] = await Promise.all([getTipoLocalidade()]);
 
         setTipoLocalidade(dataLocalidade.data);
-      } catch (error: any) {
+      } catch (error) {
         toast({
           title: `Erro ao buscar os Tipos de Localidade`,
           variant: "destructive",

@@ -28,29 +28,41 @@ export default function ListUsuarios() {
   const [users, setUsers] = useState<DashboardUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const router = useRouter();
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/ambrosio/user");
-
-      if (!response.ok) {
-        throw new Error("Erro ao carregar usuários");
-      }
-
-      const data = await response.json();
-      setUsers(Array.isArray(data.data) ? data.data : []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro desconhecido");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    let ativo = true;
+
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("/api/ambrosio/user");
+
+        if (!response.ok) {
+          throw new Error("Erro ao carregar usuários");
+        }
+
+        const data = await response.json();
+        if (ativo) {
+          setUsers(Array.isArray(data.data) ? data.data : []);
+        }
+      } catch (err) {
+        if (ativo) {
+          setError(err instanceof Error ? err.message : "Erro desconhecido");
+        }
+      } finally {
+        if (ativo) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchUsers();
-  }, []);
+
+    return () => {
+      ativo = false;
+    };
+  }, [refreshKey]);
 
   const formatPhone = (whatsapp: string) => {
     // Formata o número: 16999999999 -> (16) 99999-9999
@@ -88,7 +100,13 @@ export default function ListUsuarios() {
           <div className="text-center">
             <XCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <p className="text-red-500 mb-4">{error}</p>
-            <Button onClick={fetchUsers} variant="outline">
+            <Button
+              onClick={() => {
+                setLoading(true);
+                setRefreshKey((key) => key + 1);
+              }}
+              variant="outline"
+            >
               Tentar novamente
             </Button>
           </div>

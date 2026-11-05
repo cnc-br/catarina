@@ -92,7 +92,7 @@ export default function ParoquiaForm({
 
         setSetores(dataSetores.data);
         setDioceses(dataDioceses.data);
-      } catch (error: any) {
+      } catch (error) {
         console.error(error);
       }
     };

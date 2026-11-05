@@ -58,7 +58,7 @@ export default function DioceseForm({ urlBase, diocese }: FormDioceseProps) {
         const [dataTipoDiocese] = await Promise.all([getTipoDiocese()]);
 
         setTipoDiocese(dataTipoDiocese.data);
-      } catch (error: any) {
+      } catch (error) {
         console.error(error);
       }
     };

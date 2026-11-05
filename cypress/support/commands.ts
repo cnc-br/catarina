@@ -18,7 +18,9 @@ Cypress.Commands.add(
 );
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     interface Chainable<Subject = any> {
       login(email?: string, password?: string): Chainable<void>;
     }
