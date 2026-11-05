@@ -1,6 +1,6 @@
 # Cursor Rules — Catarina (Frontend Next.js CNC-Gestão)
 
-- Stack: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Radix UI, Cypress.
+- Stack: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, Radix UI, Cypress.
 - Governança Canônica: gestao-devsecops/specs/003-frontend-catarina/SPEC.md.
 - Regras:
   1. Next.js Docs Primeiro: Antes de codificar, consulte a documentação oficial em node_modules/next/dist/docs/.
