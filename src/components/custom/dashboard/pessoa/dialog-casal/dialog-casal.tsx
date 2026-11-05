@@ -17,9 +17,14 @@ import { useToast } from "@/components/ui/use-toast";
 type DialogProps = {
   sexo: string;
   pessoaId: number;
+  onConjugueVinculado?: () => void;
 };
 
-export function DialogPessoaCasada({ sexo, pessoaId }: DialogProps) {
+export function DialogPessoaCasada({
+  sexo,
+  pessoaId,
+  onConjugueVinculado,
+}: DialogProps) {
   const { toast } = useToast();
   const conjugue = sexo === "MASCULINO" ? "esposa" : "marido";
 
@@ -50,8 +55,9 @@ export function DialogPessoaCasada({ sexo, pessoaId }: DialogProps) {
       toast({
         title: `Casal foi vinculado!`,
         variant: "default",
-        description: `${conjugue} vinculado com sucesso. Atualize a página para ver as mudanças.`,
+        description: `${conjugue} vinculado com sucesso.`,
       });
+      onConjugueVinculado?.();
     } else {
       setVinculado(false);
       toast({

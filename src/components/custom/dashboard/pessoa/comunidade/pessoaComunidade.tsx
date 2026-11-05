@@ -29,6 +29,7 @@ import { NAO_FOI_CADASTRADO } from "@/constants";
 type PessoaComunidadeProps = {
   pessoaId: number;
   triggerClassName?: string;
+  onComunidadeVinculada?: () => void;
 };
 
 const getParoquiaLabel = (paroquia: Paroquia) => {
@@ -68,6 +69,7 @@ function renderResultadoComunidade(comunidadeEncontrada: Comunidade) {
 export default function PessoaComunidade({
   pessoaId,
   triggerClassName,
+  onComunidadeVinculada,
 }: PessoaComunidadeProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -202,6 +204,7 @@ export default function PessoaComunidade({
 
       setOpen(false);
       resetForm();
+      onComunidadeVinculada?.();
     } catch (error) {
       console.error("Erro ao salvar vinculo de comunidade", error);
       toast({
