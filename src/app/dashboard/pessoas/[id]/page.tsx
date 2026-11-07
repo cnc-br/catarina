@@ -182,6 +182,7 @@ export default function EditarPessoaPage({
                 pessoaId={pessoa.id}
                 triggerClassName="w-full"
                 onComunidadeVinculada={recarregarPessoa}
+                comunidadeVinculada={pessoa.comunidade}
               />
             </CardFooter>
           </Card>

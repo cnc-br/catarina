@@ -25,11 +25,13 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Comunidade, Paroquia } from "neocatecumenal";
 import { NAO_FOI_CADASTRADO } from "@/constants";
+import Link from "next/link";
 
 type PessoaComunidadeProps = {
   pessoaId: number;
   triggerClassName?: string;
   onComunidadeVinculada?: () => void;
+  comunidadeVinculada?: Comunidade | null;
 };
 
 const getParoquiaLabel = (paroquia: Paroquia) => {
@@ -70,6 +72,7 @@ export default function PessoaComunidade({
   pessoaId,
   triggerClassName,
   onComunidadeVinculada,
+  comunidadeVinculada,
 }: PessoaComunidadeProps) {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -216,6 +219,16 @@ export default function PessoaComunidade({
       setLoadingSalvar(false);
     }
   };
+
+  if (comunidadeVinculada) {
+    return (
+      <Button asChild variant="outline" className={triggerClassName}>
+        <Link href={`/dashboard/comunidades/${comunidadeVinculada.id}`}>
+          Detalhes da comunidade
+        </Link>
+      </Button>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
