@@ -125,6 +125,10 @@ const data = {
           url: "/dashboard/estado-civil",
         },
         {
+          title: "Avisos",
+          url: "/dashboard/avisos",
+        },
+        {
           title: "Usuários",
           url: "/dashboard/usuarios",
         },

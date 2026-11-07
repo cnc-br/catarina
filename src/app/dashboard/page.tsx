@@ -1,7 +1,7 @@
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Terminal } from "lucide-react";
+import { BellRing, Terminal } from "lucide-react";
 import { ROLE_NAO_IDENTIFICADO } from "@/constants";
 import { cookies } from "next/headers";
 import { AmbrosioBaseUrl } from "@/lib/utils";
@@ -10,6 +10,14 @@ type DashboardUser = {
   email?: string;
   role?: string;
 };
+
+type DashboardAviso = {
+  id: number;
+  texto: string;
+  dataFim: string;
+};
+
+const avisosUrl = `${AmbrosioBaseUrl}/avisos`;
 
 async function getAuthenticatedUser(): Promise<DashboardUser | null> {
   const cookieStore = await cookies();
@@ -35,8 +43,46 @@ async function getAuthenticatedUser(): Promise<DashboardUser | null> {
   return payload?.data ?? null;
 }
 
+async function getAvisos(): Promise<DashboardAviso[]> {
+  try {
+    const response = await fetch(avisosUrl, { cache: "no-store" });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = await response.json();
+    const lista = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : [];
+
+    return lista.filter(
+      (aviso: DashboardAviso) =>
+        typeof aviso?.texto === "string" && aviso.texto.trim().length > 0,
+    );
+  } catch (error) {
+    console.error("Erro ao carregar avisos", error);
+    return [];
+  }
+}
+
+function formatarData(dataFim: string): string {
+  const date = new Date(dataFim);
+  if (Number.isNaN(date.getTime())) return dataFim;
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
 export default async function DashboardPage() {
-  const user = await getAuthenticatedUser();
+  const [user, avisos] = await Promise.all([
+    getAuthenticatedUser(),
+    getAvisos(),
+  ]);
 
   return (
     <div className="pt-8">
@@ -65,6 +111,25 @@ export default async function DashboardPage() {
               em contato com o responsável por autorizar sua entrada no sistema.
             </AlertDescription>
           </Alert>
+        </div>
+      )}
+
+      {avisos.length > 0 && (
+        <div className="mx-auto max-w-lg mb-8 space-y-4 mt-8">
+          {avisos.map((aviso) => (
+            <Alert key={aviso.id} variant={"destructive"}>
+              <BellRing className="h-4 w-4" />
+              <AlertTitle className="flex items-center gap-2">
+                Recado importante
+                <Badge variant="outline" className="text-xs font-normal">
+                  Válido até {formatarData(aviso.dataFim)}
+                </Badge>
+              </AlertTitle>
+              <AlertDescription className="whitespace-pre-line">
+                {aviso.texto}
+              </AlertDescription>
+            </Alert>
+          ))}
         </div>
       )}
     </div>
