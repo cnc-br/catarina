@@ -23,6 +23,9 @@ export async function POST(req: Request) {
   const token = cookieStore.get("token")?.value;
   const data = await req.json();
 
+  const communityId = new URL(req.url).searchParams.get("comunidadeId");
+  const postUrl = communityId ? `${url}?comunidadeId=${communityId}` : url;
+
   const pessoa: Partial<Pessoa> = {
     nome: data.nome,
     conhecidoPor: data.conhecidoPor,
@@ -37,7 +40,7 @@ export async function POST(req: Request) {
     nacionalidade: data.nacionalidade,
   };
 
-  const res = await fetch(url, {
+  const res = await fetch(postUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

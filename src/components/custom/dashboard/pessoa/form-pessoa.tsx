@@ -30,6 +30,7 @@ type PessoaFormProps = {
   pessoa?: Pessoa;
   situacoesReligiosa: SituacaoReligiosa[];
   onEditSuccess?: () => void;
+  comunidadeId?: string;
 };
 
 export default function PessoaForm({
@@ -37,6 +38,7 @@ export default function PessoaForm({
   pessoa,
   situacoesReligiosa,
   onEditSuccess,
+  comunidadeId,
 }: PessoaFormProps) {
   const { toast } = useToast();
   const router = useRouter();
@@ -110,6 +112,8 @@ export default function PessoaForm({
     if (pessoa) {
       url = `${url}/${pessoa.id}`;
       method = "PATCH";
+    } else if (comunidadeId) {
+      url = `${url}?comunidadeId=${comunidadeId}`;
     }
 
     try {

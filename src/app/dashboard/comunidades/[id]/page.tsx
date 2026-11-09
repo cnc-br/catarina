@@ -226,6 +226,11 @@ export default function EditarComunidadePage({
                   Nenhum carisma cadastrado para esta comunidade
                 </div>
               )}
+              <div className="mt-4">
+                <Link href={`/dashboard/pessoas/novo?comunidadeId=${id}`}>
+                  <Button>Cadastrar pessoa</Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
