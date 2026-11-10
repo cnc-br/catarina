@@ -8,7 +8,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -19,19 +19,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { PessoaContato } from "neocatecumenal";
+import { type CountryCode } from "libphonenumber-js";
+import DdiCombobox from "@/components/custom/dashboard/pessoa/ddi-combobox";
+import {
+  PAIS_PADRAO,
+  formatarTelefoneNacional,
+  limitarTelefoneNacional,
+  montarTelefone,
+  separarTelefone,
+} from "@/lib/telefone";
 
 const TIPOS_TELEFONE = ["CELULAR", "RESIDENCIAL", "COMERCIAL"] as const;
 
 type ContatoFormProps = {
   pessoaId: number;
   urlBase: string;
+  contato?: PessoaContato;
   onContatoSalvo?: () => void;
 };
 
 const formSchema = z.object({
   tipoTelefone: z.string().min(1, { message: "O tipo de telefone é obrigatório" }),
+  pais: z.string().min(1, { message: "O país/DDI é obrigatório" }),
   telefone: z.string().min(1, { message: "O telefone é obrigatório" }),
   email: z
     .string()
@@ -44,15 +56,18 @@ const formSchema = z.object({
 export default function ContatoForm({
   pessoaId,
   urlBase,
+  contato,
   onContatoSalvo,
 }: ContatoFormProps) {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
+  const isEditing = !!contato;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       tipoTelefone: "",
+      pais: PAIS_PADRAO,
       telefone: "",
       email: "",
       observacao: "",
@@ -60,49 +75,78 @@ export default function ContatoForm({
     },
   });
 
+  useEffect(() => {
+    const { pais, nacional } = separarTelefone(contato?.telefone);
+    form.reset({
+      tipoTelefone: contato?.tipoTelefone ?? "",
+      pais,
+      telefone: nacional,
+      email: contato?.email ?? "",
+      observacao: contato?.observacao ?? "",
+      contatoPrincipal: contato?.contatoPrincipal ?? false,
+    });
+  }, [contato, form]);
+
+  const paisSelecionado = useWatch({
+    control: form.control,
+    name: "pais",
+  }) as CountryCode;
+
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setSubmitting(true);
     try {
-      const contato = {
+      const payload = {
         tipoTelefone: values.tipoTelefone,
-        telefone: values.telefone,
+        telefone: montarTelefone(values.pais as CountryCode, values.telefone),
         email: values.email || undefined,
         observacao: values.observacao || undefined,
         contatoPrincipal: values.contatoPrincipal,
       };
 
-      const res = await fetch(
-        `${urlBase}/api/ambrosio/pessoa/${pessoaId}/contato`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(contato),
+      const url =
+        isEditing && contato
+          ? `${urlBase}/api/ambrosio/pessoa/${pessoaId}/contato/${contato.id}`
+          : `${urlBase}/api/ambrosio/pessoa/${pessoaId}/contato`;
+
+      const res = await fetch(url, {
+        method: isEditing ? "PATCH" : "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify(payload),
+      });
 
       if (res.ok) {
         toast({
-          title: "Contato cadastrado",
+          title: isEditing ? "Contato atualizado" : "Contato cadastrado",
           variant: "default",
-          description: "Cadastrado(a) com sucesso!",
+          description: isEditing
+            ? "Atualizado(a) com sucesso!"
+            : "Cadastrado(a) com sucesso!",
         });
-        form.reset();
+        if (!isEditing) {
+          form.reset();
+        }
         onContatoSalvo?.();
       } else {
-        const payload = await res.json().catch(() => null);
+        const resData = await res.json().catch(() => null);
         toast({
-          title: "Contato não foi cadastrado!",
+          title: isEditing
+            ? "Contato não foi atualizado!"
+            : "Contato não foi cadastrado!",
           variant: "destructive",
-          description: payload?.message || `Erro: ${res.status}`,
+          description: resData?.message || `Erro: ${res.status}`,
         });
       }
     } catch {
       toast({
-        title: "Contato não foi cadastrado!",
+        title: isEditing
+          ? "Contato não foi atualizado!"
+          : "Contato não foi cadastrado!",
         variant: "destructive",
-        description: "Erro inesperado ao tentar cadastrar o contato.",
+        description: isEditing
+          ? "Erro inesperado ao tentar atualizar o contato."
+          : "Erro inesperado ao tentar cadastrar o contato.",
       });
     } finally {
       setSubmitting(false);
@@ -140,19 +184,53 @@ export default function ContatoForm({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="telefone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Telefone</FormLabel>
-              <FormControl>
-                <Input placeholder="Telefone ..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid gap-2 sm:grid-cols-[190px_1fr]">
+          <FormField
+            control={form.control}
+            name="pais"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>DDI</FormLabel>
+                <DdiCombobox
+                  value={field.value as CountryCode}
+                  onChange={field.onChange}
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="telefone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Telefone</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="(00) 00000-0000"
+                    inputMode="tel"
+                    name={field.name}
+                    value={formatarTelefoneNacional(
+                      paisSelecionado,
+                      field.value,
+                    )}
+                    onBlur={field.onBlur}
+                    onChange={(event) =>
+                      field.onChange(
+                        limitarTelefoneNacional(
+                          paisSelecionado,
+                          event.target.value,
+                        ),
+                      )
+                    }
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <FormField
           control={form.control}

@@ -25,7 +25,7 @@ import { use, useEffect, useState } from "react";
 import { Pessoa, SituacaoReligiosa, TipoCarismaEnum } from "neocatecumenal";
 import { SkeletonLoading } from "@/components/custom/ui/SkeletonLoading";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ClipboardIcon, Trash2Icon } from "lucide-react";
+import { ClipboardIcon, Pencil, Trash2Icon } from "lucide-react";
 
 export default function EditarPessoaPage({
   params,
@@ -258,6 +258,23 @@ export default function EditarPessoaPage({
                       key={contato.id}
                       className="mb-2 text-sm flex flex-col gap-0.5"
                     >
+                      <div className="flex justify-end">
+                        <DialogContato
+                          pessoaId={pessoa.id}
+                          urlBase={BASE_URL}
+                          contato={contato}
+                          onContatoSalvo={recarregarPessoa}
+                          trigger={
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              title="Editar contato"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                          }
+                        />
+                      </div>
                       {contato.tipoTelefone && (
                         <LabelData
                           titulo="Tipo de telefone"
