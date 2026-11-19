@@ -50,7 +50,7 @@ export default function MacroRegiaoPage() {
           {
             buttonText: "Cadastrar",
             buttonUrl: "/dashboard/macro-regiao/novo",
-            buttonShow: false,
+            buttonShow: true,
           },
         ]}
       />

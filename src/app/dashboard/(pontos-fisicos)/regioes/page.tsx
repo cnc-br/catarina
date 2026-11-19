@@ -50,7 +50,7 @@ export default function RegiaoPage() {
           {
             buttonText: "Cadastrar",
             buttonUrl: "/dashboard/regioes/novo",
-            buttonShow: false,
+            buttonShow: true,
           },
         ]}
       />

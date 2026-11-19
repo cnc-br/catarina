@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,6 +14,7 @@ import {
 import { removerAcento } from "@/lib/utils";
 import { FolderSearch } from "lucide-react";
 import { Setor } from "neocatecumenal";
+import Link from "next/link";
 import { useState } from "react";
 
 type ListSetorProps = {
@@ -51,6 +54,7 @@ export default function ListSetor({ setores }: ListSetorProps) {
             <TableHead>ID</TableHead>
             <TableHead>Nome</TableHead>
             <TableHead>Região</TableHead>
+            <TableHead>Situação</TableHead>
             <TableHead>Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -65,7 +69,14 @@ export default function ListSetor({ setores }: ListSetorProps) {
                 {setor.regiao.descricao}
               </TableCell>
               <TableCell>
-                Nenhuma ação
+                <Badge variant={setor.ativo ? "default" : "destructive"}>
+                  {setor.ativo ? "Ativo" : "Inativo"}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Button asChild variant="link" size="sm" className="px-0">
+                  <Link href={`/dashboard/setores/${setor.id}`}>Editar</Link>
+                </Button>
               </TableCell>
             </TableRow>
           ))}

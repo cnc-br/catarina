@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,6 +14,7 @@ import {
 import { removerAcento } from "@/lib/utils";
 import { FolderSearch } from "lucide-react";
 import { Regiao } from "neocatecumenal";
+import Link from "next/link";
 import { useState } from "react";
 
 type ListRegiaoProps = {
@@ -37,7 +40,7 @@ export default function ListRegiao({ regioes }: ListRegiaoProps) {
           <FolderSearch /> Pesquisa
         </Label>
         <Input
-          placeholder="Digite o nome do setor ..."
+          placeholder="Digite o nome da região ..."
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
@@ -51,6 +54,7 @@ export default function ListRegiao({ regioes }: ListRegiaoProps) {
             <TableHead>ID</TableHead>
             <TableHead>Nome</TableHead>
             <TableHead>Macro Região</TableHead>
+            <TableHead>Situação</TableHead>
             <TableHead>Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -64,7 +68,16 @@ export default function ListRegiao({ regioes }: ListRegiaoProps) {
               <TableCell className="text-slate-600 uppercase font-light">
                 {regiao.macroRegiao.descricao}
               </TableCell>
-              <TableCell>Nenhuma ação</TableCell>
+              <TableCell>
+                <Badge variant={regiao.ativo ? "default" : "destructive"}>
+                  {regiao.ativo ? "Ativo" : "Inativo"}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Button asChild variant="link" size="sm" className="px-0">
+                  <Link href={`/dashboard/regioes/${regiao.id}`}>Editar</Link>
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
