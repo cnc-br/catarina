@@ -1,3 +1,5 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,6 +14,7 @@ import {
 import { removerAcento } from "@/lib/utils";
 import { FolderSearch } from "lucide-react";
 import { MacroRegiao } from "neocatecumenal";
+import Link from "next/link";
 import { useState } from "react";
 
 type ListMacroRegiaoProps = {
@@ -54,6 +57,7 @@ export default function ListMacroRegiao({
           <TableRow>
             <TableHead>ID</TableHead>
             <TableHead>Macro Região</TableHead>
+            <TableHead>Situação</TableHead>
             <TableHead>Ações</TableHead>
           </TableRow>
         </TableHeader>
@@ -64,7 +68,18 @@ export default function ListMacroRegiao({
               <TableCell className="text-slate-600 uppercase font-light">
                 {macroRegiao.descricao}
               </TableCell>
-              <TableCell>Nenhuma ação</TableCell>
+              <TableCell>
+                <Badge variant={macroRegiao.ativo ? "default" : "destructive"}>
+                  {macroRegiao.ativo ? "Ativo" : "Inativo"}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Button asChild variant="link" size="sm" className="px-0">
+                  <Link href={`/dashboard/macro-regiao/${macroRegiao.id}`}>
+                    Editar
+                  </Link>
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
