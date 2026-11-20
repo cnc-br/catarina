@@ -45,6 +45,14 @@ export async function GET(
     const body = await response.json();
     const data = body.data ?? body;
 
+    const regioesRaw = Array.isArray(data.regioes)
+      ? data.regioes
+      : Array.isArray(data.usuarioRegioes)
+        ? data.usuarioRegioes.map(
+            (vinculo: { regiao?: unknown }) => vinculo.regiao ?? vinculo,
+          )
+        : undefined;
+
     return NextResponse.json({
       id: data.id,
       pessoaId: data.pessoaId ?? null,
@@ -56,6 +64,9 @@ export async function GET(
       verifiedWhatsapp: data.verifiedWhatsapp,
       createdAt: data.createdAt,
       paroquias: Array.isArray(data.paroquias) ? data.paroquias : [],
+      // Omitido quando o backend ainda não expõe o vínculo, para o
+      // frontend usar as regiões das paróquias como fallback.
+      ...(regioesRaw !== undefined ? { regioes: regioesRaw } : {}),
     });
   } catch (error) {
     console.error("Erro ao buscar usuário:", error);
