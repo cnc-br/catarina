@@ -11,6 +11,7 @@ import {
   FormUsuario,
 } from "@/components/custom/dashboard/usuarios/form-usuario";
 import { ParoquiasUsuario } from "@/components/custom/dashboard/usuarios/paroquias-usuario";
+import { RegioesUsuario } from "@/components/custom/dashboard/usuarios/regioes-usuario";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,8 +34,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { ROLE_ADMIN } from "@/constants";
-import { User } from "neocatecumenal";
+import { ROLE_ADMIN, ROLE_SECRETARIA_CNC } from "@/constants";
+import { Regiao, User } from "neocatecumenal";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircleIcon } from "lucide-react";
@@ -65,6 +66,20 @@ const formatDate = (value?: string | Date) => {
   return date.toLocaleDateString("pt-BR");
 };
 
+type UserComRegioes = User & { regioes?: Regiao[] };
+
+const regioesDoUsuario = (usuario: UserComRegioes): Regiao[] => {
+  if (usuario.regioes !== undefined) return usuario.regioes;
+
+  const mapa = new Map<number, Regiao>();
+  usuario.paroquias?.forEach((paroquia) => {
+    const regiao = paroquia.setor?.regiao;
+    if (regiao) mapa.set(regiao.id, regiao);
+  });
+
+  return Array.from(mapa.values());
+};
+
 export default function EditarUsuarioPage({
   params,
 }: {
@@ -74,7 +89,7 @@ export default function EditarUsuarioPage({
   const router = useRouter();
   const { user } = useUser();
   const { toast } = useToast();
-  const [usuario, setUsuario] = useState<User | null>(null);
+  const [usuario, setUsuario] = useState<UserComRegioes | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -144,7 +159,7 @@ export default function EditarUsuarioPage({
           throw new Error("Erro ao carregar usuário");
         }
 
-        const data = (await response.json()) as User;
+        const data = (await response.json()) as UserComRegioes;
         console.log("Fetched user data:", data);
         setUsuario(data);
       } catch (err) {
@@ -174,6 +189,8 @@ export default function EditarUsuarioPage({
   }
 
   const isSelfUser = user != null && String(user.id) === String(usuario.id);
+  const isSecretariaCnc = usuario.role === ROLE_SECRETARIA_CNC;
+  const regioesAtribuidas = regioesDoUsuario(usuario);
 
   return (
     <div>
@@ -239,6 +256,24 @@ export default function EditarUsuarioPage({
                     </span>
                   )}
                 </div>
+                {isSecretariaCnc && (
+                  <div className="pt-1">
+                    <span className="font-extrabold">Regiões: </span>
+                    {regioesAtribuidas.length ? (
+                      <ul className="mt-1 space-y-0.5">
+                        {regioesAtribuidas.map((regiao) => (
+                          <li key={regiao.id} className="text-sm">
+                            {regiao.descricao}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">
+                        Nenhuma região atribuída
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="pt-3">
                   <span>Status: </span>
                   <Badge variant={usuario.active ? "default" : "destructive"}>
@@ -315,12 +350,20 @@ export default function EditarUsuarioPage({
           )}
         </div>
 
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-4">
           <ParoquiasUsuario
             userId={id}
             paroquias={usuario.paroquias}
             onSalvo={() => setRefreshKey((key) => key + 1)}
           />
+          {isSecretariaCnc && (
+            <RegioesUsuario
+              userId={id}
+              regioes={usuario.regioes}
+              paroquias={usuario.paroquias}
+              onSalvo={() => setRefreshKey((key) => key + 1)}
+            />
+          )}
         </div>
       </div>
     </div>
