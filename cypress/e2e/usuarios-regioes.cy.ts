@@ -111,4 +111,31 @@ describe("Usuário SECRETARIA_CNC - gestão de regiões", () => {
       .its("request.body")
       .should("deep.include", { regiaoIds: [1] });
   });
+
+  it("permite revogar todo o acesso regional enviando regiaoIds vazio", () => {
+    cy.intercept("GET", "/api/ambrosio/user/user-secretaria", {
+      statusCode: 200,
+      body: { ...secretariaUser, regioes: [regioes[0]] },
+    }).as("getUsuario");
+
+    cy.intercept("PATCH", "/api/ambrosio/user/user-secretaria/regioes", {
+      statusCode: 200,
+      body: { message: "Regiões atualizadas com sucesso" },
+    }).as("patchRegioes");
+
+    cy.visit("/dashboard/usuarios/user-secretaria");
+    cy.wait("@getUsuario");
+    cy.wait("@getRegioes");
+
+    cy.contains('[data-slot="card-title"]', "Regiões")
+      .closest('[data-slot="card"]')
+      .within(() => {
+        cy.get('input[type="checkbox"]').first().should("be.checked").uncheck();
+        cy.contains("button", "Salvar").should("not.be.disabled").click();
+      });
+
+    cy.wait("@patchRegioes")
+      .its("request.body")
+      .should("deep.include", { regiaoIds: [] });
+  });
 });

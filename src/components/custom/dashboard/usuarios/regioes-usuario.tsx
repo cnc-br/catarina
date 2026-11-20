@@ -110,7 +110,7 @@ export function RegioesUsuario({
   };
 
   const handleSalvar = async () => {
-    if (selectedIds.length === 0 || saving) return;
+    if (saving) return;
 
     setSaving(true);
     setSaveMessage(null);
@@ -211,7 +211,7 @@ export function RegioesUsuario({
 
             <Button
               className="w-full"
-              disabled={selectedIds.length === 0 || saving}
+              disabled={saving}
               onClick={handleSalvar}
             >
               {saving ? (
