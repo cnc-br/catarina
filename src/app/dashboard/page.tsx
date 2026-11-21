@@ -1,10 +1,15 @@
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BellRing, Terminal } from "lucide-react";
+import { BellRing, CircleAlert, Terminal } from "lucide-react";
 import { ROLE_NAO_IDENTIFICADO } from "@/constants";
 import { cookies } from "next/headers";
 import { AmbrosioBaseUrl } from "@/lib/utils";
+import SystemOverviewSection from "@/components/custom/dashboard/overview/system-overview-section";
+import {
+  extractSystemOverviewPayload,
+  normalizeSystemOverview,
+  type SystemOverview,
+} from "@/components/custom/dashboard/overview/system-overview";
 
 type DashboardUser = {
   email?: string;
@@ -17,7 +22,12 @@ type DashboardAviso = {
   dataFim: string;
 };
 
+type SystemOverviewResult =
+  | { status: "ok"; data: SystemOverview }
+  | { status: "error" };
+
 const avisosUrl = `${AmbrosioBaseUrl}/avisos`;
+const systemOverviewUrl = `${AmbrosioBaseUrl}/dashboard`;
 
 async function getAuthenticatedUser(): Promise<DashboardUser | null> {
   const cookieStore = await cookies();
@@ -41,6 +51,46 @@ async function getAuthenticatedUser(): Promise<DashboardUser | null> {
 
   const payload = await response.json();
   return payload?.data ?? null;
+}
+
+async function getSystemOverview(): Promise<SystemOverviewResult | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(systemOverviewUrl, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      console.error(
+        "Erro ao carregar dados do sistema",
+        response.status,
+        response.statusText,
+      );
+      return { status: "error" };
+    }
+
+    const payload = extractSystemOverviewPayload(await response.json());
+
+    if (!payload) {
+      console.error("Payload inválido recebido de /dashboard");
+      return { status: "error" };
+    }
+
+    return { status: "ok", data: normalizeSystemOverview(payload) };
+  } catch (error) {
+    console.error("Erro ao carregar dados do sistema", error);
+    return { status: "error" };
+  }
 }
 
 async function getAvisos(): Promise<DashboardAviso[]> {
@@ -79,30 +129,26 @@ function formatarData(dataFim: string): string {
 }
 
 export default async function DashboardPage() {
-  const [user, avisos] = await Promise.all([
+  const [user, avisos, overview] = await Promise.all([
     getAuthenticatedUser(),
     getAvisos(),
+    getSystemOverview(),
   ]);
 
   return (
-    <div className="pt-8">
-      <div className="flex justify-center items-center min-h-50">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold mb-2">Bem-vindo!</h2>
-            <h3>{user?.email}</h3>
-            <p className="text-muted-foreground mb-4">
-              Estamos felizes em ter você aqui.
-            </p>
-            <Badge variant="secondary" className="text-sm font-semibold">
-              Perfil: {user?.role}
-            </Badge>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="space-y-5 pt-4">
+      <header className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">Bem-vindo!</h1>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+          <span className="break-all">{user?.email}</span>
+          <Badge variant="secondary" className="text-xs font-semibold">
+            Perfil: {user?.role}
+          </Badge>
+        </div>
+      </header>
 
       {user?.role === ROLE_NAO_IDENTIFICADO && (
-        <div className="mx-auto max-w-lg mt-8">
+        <div className="w-full max-w-3xl">
           <Alert variant="destructive">
             <Terminal className="h-4 w-4" />
             <AlertTitle>Atenção!</AlertTitle>
@@ -115,7 +161,7 @@ export default async function DashboardPage() {
       )}
 
       {avisos.length > 0 && (
-        <div className="mx-auto max-w-lg mb-8 space-y-4 mt-8">
+        <div className="w-full max-w-3xl space-y-4">
           {avisos.map((aviso) => (
             <Alert key={aviso.id} variant={"destructive"}>
               <BellRing className="h-4 w-4" />
@@ -131,6 +177,23 @@ export default async function DashboardPage() {
             </Alert>
           ))}
         </div>
+      )}
+
+      {overview?.status === "error" && (
+        <div className="w-full max-w-3xl">
+          <Alert variant="destructive">
+            <CircleAlert className="h-4 w-4" />
+            <AlertTitle>Dados indisponíveis</AlertTitle>
+            <AlertDescription>
+              Não foi possível carregar os dados do sistema agora. Tente
+              novamente mais tarde.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
+      {overview?.status === "ok" && (
+        <SystemOverviewSection data={overview.data} />
       )}
     </div>
   );
